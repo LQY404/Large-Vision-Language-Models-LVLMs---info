@@ -31,5 +31,38 @@ This is a repository of Large-scale Vision-language models.
     - 数据构造（论文附录比较清楚）
     - 分阶段微调
 
+- deepseek
+  - paper: https://arxiv.org/abs/2403.05525, code: https://github.com/deepseek-ai/DeepSeek-VL
+  - 模型基本结构：基本和Qwen-VL一样，三部分，a hybrid vision encoder, a vision adaptor, and a language model（LLM）
+    - hybrid vision encoder
+      - 使用SigLIP处理低分辨率的图像（384x384）, SAM-B处理高分辨率图像（1024x1024），分别能够得到hxwxD的feature map
+    - vision adaptor
+      - 处理由hybrid vision encoder送过来的feature map
+      - 具体来说，先将feature map上采用2倍并输入两层卷积，随后将feature map拉直，得到NxD维特征（类似token），在论文中每个feature map处理后都得到576x1024的token，最后将两种token在通道维度拼接得到576x2048的visual token
+      - 最后使用一层GELU+MLP做embedding，作为LLM的输入
+    - LLM
+      - 使用DeepSeek LLM，包括1B和7B
+  - 训练阶段：和Qwen-VL一样分为三个阶段训练
+    - stage 1: Training VL Adaptor
+      - 对vision adaptor进行训练，其他部分均frozen，相当于固定视觉和文本编码器，训练两者的融合模块。这里有一点可以关注，VLA的参数量很少，scaling law几乎无效，甚至会起到反作用，因此在这个阶段没有用很多数据进行调整
+    - stage 2: Joint VL Pre-training
+      - 对除了hybrid vision encoder外的所有参数进行调整，主要用来训练模型的多模态能力。在这个阶段需要谨慎的控制好用于训练的text-image和text数据的比率，否则会造成模型的language能力下降
+    - stage 3: Supervised Finetuning
+      - 全参数调整（但frozen SAM-B，显存限制）
+  - 数据部分：通常的处理，划分为pretraining dataset和fine-tuning dataset
+    - pretraining dataset主要由一些比较杂的数据构成（论文table 1），主要参与训练的stage1
+    - fine-tuning dataset数据比较干净，包括LAION等，主要参与训练的stage3
+    - 两者共同参与训练的stage2
+  - 重要的点（个人）
+    - 高质量图像数据（1024x1024）， hybrid vision encoder
+    - modality warm-up，逐步增加text-image数据，初始保持纯text数据在训练过程中占主导，防止模型language能力出现degradation问题
+    - 论文中的性能对比上，基本能干过当时的开源LVLMs，但和GPT4-v有差距
 
+
+- 待看：
+  - LLAVA: Visual instruction tuning
+  - LLaMA: LLaMA: Open and efficient foundation language models
+  - RMSNorm: Root mean square layer normalization
+  - SwiGLU: Glu variants improve transformer
+  - Rotary Embedding: Roformer: Enhanced transformer with rotary position embedding
   

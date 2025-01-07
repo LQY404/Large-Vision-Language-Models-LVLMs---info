@@ -32,13 +32,13 @@ This is a repository of Large-scale Vision-language models.
     - 分阶段微调
 
 - deepseek
-  - paper: https://arxiv.org/abs/2403.05525, code: https://github.com/deepseek-ai/DeepSeek-VL
+  - paper: [Deepseek-VL](https://arxiv.org/abs/2403.05525), code: https://github.com/deepseek-ai/DeepSeek-VL
   - 模型基本结构：基本和Qwen-VL一样，三部分，a hybrid vision encoder, a vision adaptor, and a language model（LLM）
     - hybrid vision encoder
       - 使用SigLIP处理低分辨率的图像（384x384）, SAM-B处理高分辨率图像（1024x1024），分别能够得到hxwxD的feature map
     - vision adaptor
       - 处理由hybrid vision encoder送过来的feature map
-      - 具体来说，先将feature map上采用2倍并输入两层卷积，随后将feature map拉直，得到NxD维特征（类似token），在论文中每个feature map处理后都得到576x1024的token，最后将两种token在通道维度拼接得到576x2048的visual token
+      - 具体来说，先将feature map上采样2倍并输入两层卷积，随后将feature map拉直，得到NxD维特征（类似token），在论文中每个feature map处理后都得到576x1024的token，最后将两种token在通道维度拼接得到576x2048的visual token
       - 最后使用一层GELU+MLP做embedding，作为LLM的输入
     - LLM
       - 使用DeepSeek LLM，包括1B和7B
@@ -58,6 +58,32 @@ This is a repository of Large-scale Vision-language models.
     - modality warm-up，逐步增加text-image数据，初始保持纯text数据在训练过程中占主导，防止模型language能力出现degradation问题
     - 论文中的性能对比上，基本能干过当时的开源LVLMs，但和GPT4-v有差距
 
+- deepseek
+  - paper: [Deepseek-VL2](https://arxiv.org/abs/2412.10302), code: https://github.com/deepseek-ai/DeepSeek-VL2
+  - 模型结构：整体上同样由三部分构成，具体来说
+    - LLM部分
+      - 与一代版本不同的是，LLM部分采用了基于MoE架构的DeepseekMoE
+    - vision encoder
+      - 不同于上一代使用两个不同的visual encoder来处理低、高分辨率图像，VL2只使用一个ViT作为visual encoder（SigLip）
+      - 为了处理不同尺寸的图像，VL2不会进行resize操作，而是将任意尺寸的的图像全部使用resize+padding的方式扩充到n*384xm*384，这样就可以将整个图像划分成n*m个384x384的patch（大小尺寸与SigLip一致），以次处理任意分辨率的图像
+      - 同时，这样resize再划分的策略产生的特征基本都是局部性质的，因此会再添加一个对整体图像encode的feature，使用分隔符与patch的feature分隔开后一起拼接
+      - 整体设计上感觉是参考了llava-next
+    - vision adaptor
+      - 相当简化，由几层MLP构成
+  - 训练阶段：三个阶段训练
+    - stage 1
+      - 同时对visual encoder和vision-language adaptor（MLP）进行调整
+    - stage 2
+      - 与deepseek-vl的stage 2一样，对vision-language adaptor和LLM进行调整
+    - stage 3
+      - 全参数调整
+    
+  - 重要的点（个人）
+    - 更强力的LLM
+    - 更先进的图像编码方式，保存了更多的细节信息
+    - 更精细的数据构造
+
+
 
 - 待看：
   - LLAVA: Visual instruction tuning
@@ -65,4 +91,6 @@ This is a repository of Large-scale Vision-language models.
   - RMSNorm: Root mean square layer normalization
   - SwiGLU: Glu variants improve transformer
   - Rotary Embedding: Roformer: Enhanced transformer with rotary position embedding
+  - Qwen2-vl: Enhancing vision-language model’s perception of the world at any resolution
+  - DeepSeekMoE
   

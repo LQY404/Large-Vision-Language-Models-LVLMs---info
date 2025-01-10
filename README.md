@@ -82,7 +82,20 @@ This is a repository of Large-scale Vision-language models.
     - 更强力的LLM
     - 更先进的图像编码方式，保存了更多的细节信息
     - 更精细的数据构造
-
+- Meta
+  - paper: [LLaMA: LLaMA: Open and efficient foundation language models](https://arxiv.org/pdf/2302.13971), code: https://github.com/facebookresearch/llama
+  - 数据
+    - 只用到公开的数据集（因此能够做到完全公开，包括模型、代码、数据、模型参数），完整可复现
+    - 从互联网、arxiv、GitHub、Wikipedia等来源爬取了大量数据，并且对数据进行了大规模清洗（清洗方法需要注意）
+    - 使用大家都使用的tokenizer——byte pair encoding(BPE)对字符串进行编码
+  - 架构：整体上是transformer结构，细节不一样
+    - 归一化：使用pre-normalization策略（每一层的输入先做归一化再进MHA，而不是对每一层的输出做归一化），归一化使用RMSNorm而不是原始的LN（RMSNorm不需要计算方差，速度很快，且效果更好）
+    - 激活函数：原始transformer使用类ReLU，这里LLAMA使用SwiGLU，至于为什么用这个，We offer no explanation as to why these architectures seem to work; we  attribute their success, as all else, to divine benevolence.）
+    - 位置编码使用RoPE（可以从二维的情况理解，此时位置编码就是用来对q/k做旋转的）
+  - 个人评价
+    - 开源的大模型，并且发布了完整的cpp部署文档
+    - 同时支持非常多的LLM以及LVLM，对落地部署非常友好
+    - 和vllm有得一拼
 
 
 - 待看：

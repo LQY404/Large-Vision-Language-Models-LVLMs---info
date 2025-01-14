@@ -83,7 +83,7 @@ This is a repository of Large-scale Vision-language models.
     - 更先进的图像编码方式，保存了更多的细节信息
     - 更精细的数据构造
 - Meta
-  - paper: [LLaMA: LLaMA: Open and efficient foundation language models](https://arxiv.org/pdf/2302.13971), code: https://github.com/facebookresearch/llama
+  - paper: [LLaMA: Open and efficient foundation language models](https://arxiv.org/pdf/2302.13971), code: https://github.com/facebookresearch/llama
   - 数据
     - 只用到公开的数据集（因此能够做到完全公开，包括模型、代码、数据、模型参数），完整可复现
     - 从互联网、arxiv、GitHub、Wikipedia等来源爬取了大量数据，并且对数据进行了大规模清洗（清洗方法需要注意）
@@ -97,6 +97,24 @@ This is a repository of Large-scale Vision-language models.
     - 同时支持非常多的LLM以及LVLM，对落地部署非常友好
     - 和vllm有得一拼
 
+- personal
+  - paper: [Visual Instruction Tuning](https://arxiv.org/pdf/2304.08485), code: https://llava-vl.github.io
+  - 模型
+    - 简称LLaVA（Large Language and Vision Assistant），名称已经体现了该论文主要关注多模态大模型
+    - 模型结构很简单，使用CLIP对image进行编码，使用LLM对文本进行编码
+    - 使用简单的MLP对image token进行映射，将映射后的image token和经过embedding layer得到的text token进行拼接，直接送入LLM即可
+   
+  - 数据
+    - 使用chatgpt来构造image-text pair数据集
+   
+- personal
+  - paper: [LLaVA-Mini: Efficient Image and Video Large Multimodal Models with One Vision Token](https://arxiv.org/abs/2501.03895), code: https://github.com/ictnlp/LLaVA-Mini
+  - 核心点
+    - 实验发现，在多模态融合时，更前面的层visual token更重要，越到后面的trans层，visual token越不重要
+    - 因为随着layer的加深，visual token中的信息已经逐渐被cross-attention机制注入到text token中了
+    - 因此，该论文提出在更早期的层进行多模态token的融合，需要注意的是，多模态特征融合在送入LLM之前
+    - 融合后的text token中已经充满了visual token的信息。因此，对于visual token，则使用一个预定义的query，与原本的visual token做cross attention做token的compression
+    - 最后将compression后的visual token（C^2，可调为1）和融合后的text token拼接送入LLM即可
 
 - 待看：
   - LLAVA: Visual instruction tuning

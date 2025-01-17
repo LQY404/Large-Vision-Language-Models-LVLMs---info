@@ -116,12 +116,31 @@ This is a repository of Large-scale Vision-language models.
     - 融合后的text token中已经充满了visual token的信息。因此，对于visual token，则使用一个预定义的query，与原本的visual token做cross attention做token的compression
     - 最后将compression后的visual token（C^2，可调为1）和融合后的text token拼接送入LLM即可
 
-- 待看：
-  - LLAVA: Visual instruction tuning
-  - LLaMA: LLaMA: Open and efficient foundation language models
-  - RMSNorm: Root mean square layer normalization
-  - SwiGLU: Glu variants improve transformer
-  - Rotary Embedding: Roformer: Enhanced transformer with rotary position embedding
-  - Qwen2-vl: Enhancing vision-language model’s perception of the world at any resolution
-  - DeepSeekMoE
-  
+- personal
+  - paper: [LISA: Reasoning Segmentation via Large Language Model](https://arxiv.org/pdf/2308.00692), code: https://github.com/dvlab-research/LISA
+  - 解决问题
+    - 借助LLM来做referring segmentation
+  - 框架结构
+    - VLLM，使用LLaVA，但freeze，加了个LoRA来fine-tune
+    - visual encoder，用来对输入的image进行编码，有用到SAM或者Mask2Former，freeze
+    - decoder，对来自visual encoder的图像特征，以及来自VLLM的多模态特征（聚合到\[SEG\]中）进行融合，生成mask，结构和SAM类似
+  - 个人评价
+    - 这个工作可以重点关注，后LLM时代下，referring segmentation究竟该怎么走，和T-Rex2一样成为令我印象比较深刻的工作
+    - 在之前的工作中，借助LLM来做理解（无论时det.还是seg.），基本都是以只输出text的形式（比如做det./grounding时，则是将bbox的坐标变成str来生成）。LISA比较有开创性，CVPR oral还是可以的
+    - 除了解决问题上的范式变化，还有就是造数据的方式同样值得学习，数据包括semantic+text、“古老时代”的referring segmentation数据，以及VQA数据共同组成
+    - 从流程上来说，其结构可以理解为
+      - 使用VLLM处理多模态信息，得到多模态特征
+      - 将多模态特征在SAM的decoder阶段进行融合，最后输出mask
+    - 所以其实结构上很简单的，主要是解决问题的思路（讲故事的方式doge）
+  - 后续
+    - 后续还有[LISA+++](https://arxiv.org/pdf/2312.17240)，就是使用的LISA的模型，主要在数据设计上，以增强模型的推理能力
+
+- personal
+  - paper: [Sa2VA: Marrying SAM2 with LLaVA for Dense Grounded Understanding of Images and Videos](https://arxiv.org/pdf/2501.04001), code: https://github.com/magic-research/Sa2VA
+  - 个人评价
+    - 出来不久（20240107上传的arxiv），只能说太卷了（）
+    - 整体结构上来看其实和LISA的范式没有大的区别，包括模型框架组成也是类似（VLLM+SAM2），只是在细节上有一定差别
+    - 主要亮点的认为主要在于：1）图像，视频，text/visual/image级别的prompt均得到支持；2）数据构造方式（这个非常值得借鉴）：从object到scene，再到video
+
+   
+    

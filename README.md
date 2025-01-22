@@ -142,5 +142,17 @@ This is a repository of Large-scale Vision-language models.
     - 整体结构上来看其实和LISA的范式没有大的区别，包括模型框架组成也是类似（VLLM+SAM2），只是在细节上有一定差别
     - 主要亮点的认为主要在于：1）图像，视频，text/visual/image级别的prompt均得到支持；2）数据构造方式（这个非常值得借鉴）：从object到scene，再到video
 
-   
+- personal
+  - paper: [GLaMM: Pixel Grounding Large Multimodal Model](https://arxiv.org/abs/2311.03356), code: https://mbzuai-oryx.github.io/groundingLMM
+  - 解决问题
+    - 和LISA专注的类似
+    - 但增加了visual prompt（single or multiple）的输入
+    - 同时，增加了多轮对话能力，以及visual部分的encoder
+  - 模型结构
+    - visual encoder，global visual encoder编码得到feature maps，visual prompt使用RoIAlign的方法从feature maps中得到14x14的visual prompt特征
+    - grounding image encoder，专门对全局图像进行编码
+    - pixel decoder，接受来自VLM的输出，以及grounding image encoder的输出作为输入，得到binary mask的分割结果
+    - VLM，以输入text和visual prompt特征作为输入，产生多模态特征
+    - 总体来说，从结构上，比LISA多visual级别的prompt编码，以及一个额外单独完整的对image的encoder+decoder，其他没有大的区别
+
     
